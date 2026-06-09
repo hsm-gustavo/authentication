@@ -1,6 +1,7 @@
 package email
 
 import (
+	"bytes"
 	"fmt"
 	"net/smtp"
 
@@ -8,24 +9,45 @@ import (
 )
 
 type Service struct {
-	smtpConfig config.SMTPConfig
+	auth smtp.Auth
+	addr string
+	from string
 }
 
-
-func NewService(smtpConfig config.SMTPConfig) *Service {
+func NewService(cfg *config.SMTPConfig) *Service {
 	return &Service{
-		smtpConfig: smtpConfig,
+		auth: smtp.PlainAuth(
+			"",
+			cfg.Username,
+			cfg.Password,
+			cfg.Host,
+		),
+		addr: fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		from: cfg.From,
 	}
 }
 
-func (s *Service) SendEmail(to string, subject string, body string) error {
-	mime := "MIME-version: 1.0;\nContent-Type: text/plain; charset=\"UTF-8\";\n"
-	fromHeader := fmt.Sprintf("From: %s\n\n", s.smtpConfig.From)
+func (s *Service) SendEmail(msg Message) error {
+	data := s.buildMessage(msg)
 
-	message := []byte(subject + mime + fromHeader + body)
+	return smtp.SendMail(s.addr, s.auth, s.from, []string{msg.To}, data)
+}
 
-	auth := smtp.PlainAuth("", s.smtpConfig.Username, s.smtpConfig.Password, s.smtpConfig.Host)
+func (s *Service) buildMessage(msg Message) []byte {
+	headers := map[string]string{
+		"From":    fmt.Sprintf("Authentication <%s>", s.from),
+		"To":      msg.To,
+		"Subject": msg.Subject,
+		"MIME-Version": "1.0",
+		"Content-Type": "text/plain; charset=\"UTF-8\"",
+	}
 
-	address := fmt.Sprintf("%s:%s", s.smtpConfig.Host, s.smtpConfig.Port)
-	return smtp.SendMail(address, auth, s.smtpConfig.From, []string{to}, message)
+	var body bytes.Buffer
+
+	for key, value := range headers {
+		body.WriteString(fmt.Sprintf("%s: %s\r\n", key, value))
+	}
+	body.WriteString("\r\n")
+	body.WriteString(msg.Body)
+	return body.Bytes()
 }

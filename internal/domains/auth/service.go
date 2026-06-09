@@ -45,7 +45,7 @@ func (s *Service) Register(ctx context.Context, dto RegisterDTO) error {
 
 	b64Salt  := base64.RawStdEncoding.EncodeToString(salt)
 	b64Hash  := base64.RawStdEncoding.EncodeToString(hash)
-	encodedString := fmt.Sprintf("$argon2id$v=%d$m=%d,t%d,p=%d$%s$%s", argon2.Version, argon2Memory, argon2Time, argon2Threads, b64Salt, b64Hash)
+	encodedString := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, argon2Memory, argon2Time, argon2Threads, b64Salt, b64Hash)
 
 	userID, err := uuid.NewV7()
 	if err != nil {

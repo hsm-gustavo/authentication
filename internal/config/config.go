@@ -7,11 +7,20 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type SMTPConfig struct {
+	Host string
+	Port string
+	Username string
+	Password string
+	From string
+}
+
 type Config struct {
 	Port string
 	DBURL string
 	Env string
 	JWTSecret string
+	SMTPConfig SMTPConfig
 }
 
 func Load() Config {
@@ -27,6 +36,12 @@ func Load() Config {
 		DBURL: getEnv("DATABASE_URL", "postgres://user:password@localhost:5432/mydb?sslmode=disable"),
 		Env: getEnv("ENV", "development"),
 		JWTSecret: getEnv("JWT_SECRET", "your-secret-key"),
+		SMTPConfig: SMTPConfig{
+			Host: getEnv("SMTP_HOST", "smtp.example.com"),
+			Port: getEnv("SMTP_PORT", "587"),
+			Username: getEnv("SMTP_USERNAME", "user"),
+			Password: getEnv("SMTP_PASSWORD", "password"),
+		},
 	}
 	
 	return cfg

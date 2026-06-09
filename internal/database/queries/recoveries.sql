@@ -1,11 +1,11 @@
 -- name: CreateRecovery :one
-INSERT INTO recoveries (user_id, email, code, expires_at)
-VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, email, code, attempts, expired, expires_at, created_at, updated_at;
+INSERT INTO recoveries (user_id, email, code, type, expires_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, email, code, type, attempts, expired, expires_at, created_at, updated_at;
 
 -- name: GetActiveRecoveryByCode :one
 -- busca apenas códigos que pertencem ao e-mail, não estão expirados, não foram usados e têm menos de 5 tentativas
-SELECT id, user_id, email, code, attempts, expired, expires_at, created_at, updated_at
+SELECT id, user_id, email, code, type, attempts, expired, expires_at, created_at, updated_at
 FROM recoveries
 WHERE code = $1 
   AND email = $2 

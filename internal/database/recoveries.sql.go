@@ -11,15 +11,16 @@ import (
 )
 
 const createRecovery = `-- name: CreateRecovery :one
-INSERT INTO recoveries (user_id, email, code, expires_at)
-VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, email, code, attempts, expired, expires_at, created_at, updated_at
+INSERT INTO recoveries (user_id, email, code, type, expires_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, email, code, type, attempts, expired, expires_at, created_at, updated_at
 `
 
 type CreateRecoveryParams struct {
 	UserID    string    `db:"user_id" json:"user_id"`
 	Email     string    `db:"email" json:"email"`
 	Code      string    `db:"code" json:"code"`
+	Type      string    `db:"type" json:"type"`
 	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
 }
 
@@ -28,6 +29,7 @@ type CreateRecoveryRow struct {
 	UserID    string    `db:"user_id" json:"user_id"`
 	Email     string    `db:"email" json:"email"`
 	Code      string    `db:"code" json:"code"`
+	Type      string    `db:"type" json:"type"`
 	Attempts  int32     `db:"attempts" json:"attempts"`
 	Expired   bool      `db:"expired" json:"expired"`
 	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
@@ -40,6 +42,7 @@ func (q *Queries) CreateRecovery(ctx context.Context, arg CreateRecoveryParams) 
 		arg.UserID,
 		arg.Email,
 		arg.Code,
+		arg.Type,
 		arg.ExpiresAt,
 	)
 	var i CreateRecoveryRow
@@ -48,6 +51,7 @@ func (q *Queries) CreateRecovery(ctx context.Context, arg CreateRecoveryParams) 
 		&i.UserID,
 		&i.Email,
 		&i.Code,
+		&i.Type,
 		&i.Attempts,
 		&i.Expired,
 		&i.ExpiresAt,
@@ -58,7 +62,7 @@ func (q *Queries) CreateRecovery(ctx context.Context, arg CreateRecoveryParams) 
 }
 
 const getActiveRecoveryByCode = `-- name: GetActiveRecoveryByCode :one
-SELECT id, user_id, email, code, attempts, expired, expires_at, created_at, updated_at
+SELECT id, user_id, email, code, type, attempts, expired, expires_at, created_at, updated_at
 FROM recoveries
 WHERE code = $1 
   AND email = $2 
@@ -78,6 +82,7 @@ type GetActiveRecoveryByCodeRow struct {
 	UserID    string    `db:"user_id" json:"user_id"`
 	Email     string    `db:"email" json:"email"`
 	Code      string    `db:"code" json:"code"`
+	Type      string    `db:"type" json:"type"`
 	Attempts  int32     `db:"attempts" json:"attempts"`
 	Expired   bool      `db:"expired" json:"expired"`
 	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
@@ -94,6 +99,7 @@ func (q *Queries) GetActiveRecoveryByCode(ctx context.Context, arg GetActiveReco
 		&i.UserID,
 		&i.Email,
 		&i.Code,
+		&i.Type,
 		&i.Attempts,
 		&i.Expired,
 		&i.ExpiresAt,

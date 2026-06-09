@@ -7,6 +7,7 @@ import (
 
 	"github.com/hsm-gustavo/authentication/internal/app"
 	"github.com/hsm-gustavo/authentication/internal/domains/auth"
+	"github.com/hsm-gustavo/authentication/internal/domains/email"
 	"github.com/hsm-gustavo/authentication/internal/domains/jwt"
 	"github.com/hsm-gustavo/authentication/internal/middlewares"
 )
@@ -23,7 +24,7 @@ func Setup(app *app.Application) http.Handler {
 			json.NewEncoder(w).Encode(map[string]string{"message": "Hello, World!"})
 		}
 	})
-	authHandler := auth.RegisterModule(app.DB, jwt.NewJWTService(app.Config.JWTSecret, 1 * time.Hour))
+	authHandler := auth.RegisterModule(app.DB, jwt.NewJWTService(app.Config.JWTSecret, 1 * time.Hour), email.NewService(&app.Config.SMTPConfig))
 
 	mux.Handle("/health", middlewares.Wrap(healthHandler, app.Logger))
 	mux.Handle("/auth/", http.StripPrefix("/auth", middlewares.Wrap(authHandler, app.Logger)))

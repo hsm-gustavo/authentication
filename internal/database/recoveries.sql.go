@@ -7,8 +7,7 @@ package database
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createRecovery = `-- name: CreateRecovery :one
@@ -18,22 +17,22 @@ RETURNING id, user_id, email, code, attempts, expired, expires_at, created_at, u
 `
 
 type CreateRecoveryParams struct {
-	UserID    string             `db:"user_id" json:"user_id"`
-	Email     string             `db:"email" json:"email"`
-	Code      string             `db:"code" json:"code"`
-	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	Email     string    `db:"email" json:"email"`
+	Code      string    `db:"code" json:"code"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
 }
 
 type CreateRecoveryRow struct {
-	ID        int32              `db:"id" json:"id"`
-	UserID    string             `db:"user_id" json:"user_id"`
-	Email     string             `db:"email" json:"email"`
-	Code      string             `db:"code" json:"code"`
-	Attempts  int32              `db:"attempts" json:"attempts"`
-	Expired   bool               `db:"expired" json:"expired"`
-	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID        int32     `db:"id" json:"id"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	Email     string    `db:"email" json:"email"`
+	Code      string    `db:"code" json:"code"`
+	Attempts  int32     `db:"attempts" json:"attempts"`
+	Expired   bool      `db:"expired" json:"expired"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) CreateRecovery(ctx context.Context, arg CreateRecoveryParams) (CreateRecoveryRow, error) {
@@ -75,15 +74,15 @@ type GetActiveRecoveryByCodeParams struct {
 }
 
 type GetActiveRecoveryByCodeRow struct {
-	ID        int32              `db:"id" json:"id"`
-	UserID    string             `db:"user_id" json:"user_id"`
-	Email     string             `db:"email" json:"email"`
-	Code      string             `db:"code" json:"code"`
-	Attempts  int32              `db:"attempts" json:"attempts"`
-	Expired   bool               `db:"expired" json:"expired"`
-	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID        int32     `db:"id" json:"id"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	Email     string    `db:"email" json:"email"`
+	Code      string    `db:"code" json:"code"`
+	Attempts  int32     `db:"attempts" json:"attempts"`
+	Expired   bool      `db:"expired" json:"expired"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
 // busca apenas códigos que pertencem ao e-mail, não estão expirados, não foram usados e têm menos de 5 tentativas

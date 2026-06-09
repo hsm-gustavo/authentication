@@ -6,38 +6,39 @@ package database
 
 import (
 	"net/netip"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Recovery struct {
-	ID        int32              `db:"id" json:"id"`
-	UserID    string             `db:"user_id" json:"user_id"`
-	Email     string             `db:"email" json:"email"`
-	Code      string             `db:"code" json:"code"`
-	Attempts  int32              `db:"attempts" json:"attempts"`
-	Expired   bool               `db:"expired" json:"expired"`
-	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	Type      string             `db:"type" json:"type"`
+	ID        int32     `db:"id" json:"id"`
+	UserID    string    `db:"user_id" json:"user_id"`
+	Email     string    `db:"email" json:"email"`
+	Code      string    `db:"code" json:"code"`
+	Attempts  int32     `db:"attempts" json:"attempts"`
+	Expired   bool      `db:"expired" json:"expired"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	Type      string    `db:"type" json:"type"`
 }
 
 type Session struct {
-	ID             string             `db:"id" json:"id"`
-	UserID         string             `db:"user_id" json:"user_id"`
-	SecretHash     []byte             `db:"secret_hash" json:"secret_hash"`
-	IpAddress      *netip.Addr        `db:"ip_address" json:"ip_address"`
-	UserAgent      pgtype.Text        `db:"user_agent" json:"user_agent"`
-	LastVerifiedAt pgtype.Timestamptz `db:"last_verified_at" json:"last_verified_at"`
-	CreatedAt      pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	ID             string      `db:"id" json:"id"`
+	UserID         string      `db:"user_id" json:"user_id"`
+	SecretHash     []byte      `db:"secret_hash" json:"secret_hash"`
+	IpAddress      *netip.Addr `db:"ip_address" json:"ip_address"`
+	UserAgent      pgtype.Text `db:"user_agent" json:"user_agent"`
+	LastVerifiedAt time.Time   `db:"last_verified_at" json:"last_verified_at"`
+	CreatedAt      time.Time   `db:"created_at" json:"created_at"`
 }
 
 type User struct {
-	ID           string             `db:"id" json:"id"`
-	Email        string             `db:"email" json:"email"`
-	PasswordHash string             `db:"password_hash" json:"password_hash"`
-	IsVerified   bool               `db:"is_verified" json:"is_verified"`
-	CreatedAt    pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID           string    `db:"id" json:"id"`
+	Email        string    `db:"email" json:"email"`
+	PasswordHash string    `db:"password_hash" json:"password_hash"`
+	IsVerified   bool      `db:"is_verified" json:"is_verified"`
+	CreatedAt    time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at" json:"updated_at"`
 }

@@ -7,8 +7,7 @@ package database
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -24,11 +23,11 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID         string             `db:"id" json:"id"`
-	Email      string             `db:"email" json:"email"`
-	IsVerified bool               `db:"is_verified" json:"is_verified"`
-	CreatedAt  pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID         string    `db:"id" json:"id"`
+	Email      string    `db:"email" json:"email"`
+	IsVerified bool      `db:"is_verified" json:"is_verified"`
+	CreatedAt  time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {

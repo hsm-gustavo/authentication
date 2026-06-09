@@ -2,7 +2,9 @@ package auth
 
 import (
 	"encoding/json"
+	"net"
 	"net/http"
+	"strings"
 )
 
 type Controller struct {
@@ -41,14 +43,53 @@ func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := c.service.Login(r.Context(), dto)
+	userAgent := r.Header.Get("User-Agent")
+	// tratando proxies como nginx ou cloudflare
+	ipAddress := r.Header.Get("X-Forwarded-For")
+	if ipAddress == "" {
+		// se nao tiver proxy, pegamos o remote addr
+		var err error
+		ipAddress, _, err = net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			ipAddress = r.RemoteAddr
+		}
+	} else {
+		// se tiver proxy, o header pode conter uma lista de IPs, então pegamos o primeiro
+		if strings.Contains(ipAddress, ",") {
+			ipAddress = strings.Split(ipAddress, ",")[0]
+		}
+	}
+
+	response, err := c.service.Login(r.Context(), dto, userAgent, strings.TrimSpace(ipAddress))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
+	responseCleaned := struct {
+		AccessToken string `json:"access_token"`
+	}{
+		AccessToken: response.AccessToken,
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name: "session_id",
+		Value: response.SessionID,
+		Path: "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name: "session_secret",
+		Value: response.SessionSecret,
+		Path: "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(responseCleaned)
 }
 
 func (c *Controller) ConfirmEmailHandler(w http.ResponseWriter, r *http.Request) {

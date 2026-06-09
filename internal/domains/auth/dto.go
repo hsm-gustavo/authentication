@@ -12,4 +12,6 @@ type LoginDTO struct {
 
 type LoginResponse struct {
 	AccessToken string `json:"access_token"`
+	SessionSecret string `json:"session_secret"`
+	SessionID string `json:"session_id"`
 }

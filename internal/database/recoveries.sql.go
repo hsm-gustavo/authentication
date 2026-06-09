@@ -24,14 +24,26 @@ type CreateRecoveryParams struct {
 	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
 }
 
-func (q *Queries) CreateRecovery(ctx context.Context, arg CreateRecoveryParams) (Recovery, error) {
+type CreateRecoveryRow struct {
+	ID        int32              `db:"id" json:"id"`
+	UserID    string             `db:"user_id" json:"user_id"`
+	Email     string             `db:"email" json:"email"`
+	Code      string             `db:"code" json:"code"`
+	Attempts  int32              `db:"attempts" json:"attempts"`
+	Expired   bool               `db:"expired" json:"expired"`
+	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
+func (q *Queries) CreateRecovery(ctx context.Context, arg CreateRecoveryParams) (CreateRecoveryRow, error) {
 	row := q.db.QueryRow(ctx, createRecovery,
 		arg.UserID,
 		arg.Email,
 		arg.Code,
 		arg.ExpiresAt,
 	)
-	var i Recovery
+	var i CreateRecoveryRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -62,10 +74,22 @@ type GetActiveRecoveryByCodeParams struct {
 	Email string `db:"email" json:"email"`
 }
 
+type GetActiveRecoveryByCodeRow struct {
+	ID        int32              `db:"id" json:"id"`
+	UserID    string             `db:"user_id" json:"user_id"`
+	Email     string             `db:"email" json:"email"`
+	Code      string             `db:"code" json:"code"`
+	Attempts  int32              `db:"attempts" json:"attempts"`
+	Expired   bool               `db:"expired" json:"expired"`
+	ExpiresAt pgtype.Timestamptz `db:"expires_at" json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+}
+
 // busca apenas códigos que pertencem ao e-mail, não estão expirados, não foram usados e têm menos de 5 tentativas
-func (q *Queries) GetActiveRecoveryByCode(ctx context.Context, arg GetActiveRecoveryByCodeParams) (Recovery, error) {
+func (q *Queries) GetActiveRecoveryByCode(ctx context.Context, arg GetActiveRecoveryByCodeParams) (GetActiveRecoveryByCodeRow, error) {
 	row := q.db.QueryRow(ctx, getActiveRecoveryByCode, arg.Code, arg.Email)
-	var i Recovery
+	var i GetActiveRecoveryByCodeRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,

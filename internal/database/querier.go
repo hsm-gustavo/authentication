@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	CreateRecovery(ctx context.Context, arg CreateRecoveryParams) (Recovery, error)
+	CreateRecovery(ctx context.Context, arg CreateRecoveryParams) (CreateRecoveryRow, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	// desconectar de todos os outros dispositivos
@@ -17,7 +17,7 @@ type Querier interface {
 	// usado no Logout
 	DeleteSession(ctx context.Context, id string) error
 	// busca apenas códigos que pertencem ao e-mail, não estão expirados, não foram usados e têm menos de 5 tentativas
-	GetActiveRecoveryByCode(ctx context.Context, arg GetActiveRecoveryByCodeParams) (Recovery, error)
+	GetActiveRecoveryByCode(ctx context.Context, arg GetActiveRecoveryByCodeParams) (GetActiveRecoveryByCodeRow, error)
 	GetSession(ctx context.Context, id string) (Session, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id string) (User, error)

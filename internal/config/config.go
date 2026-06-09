@@ -41,6 +41,7 @@ func Load() Config {
 			Port: getEnv("SMTP_PORT", "587"),
 			Username: getEnv("SMTP_USERNAME", "user"),
 			Password: getEnv("SMTP_PASSWORD", "password"),
+			From: getEnv("SMTP_FROM", "noreply@localhost"),
 		},
 	}
 	

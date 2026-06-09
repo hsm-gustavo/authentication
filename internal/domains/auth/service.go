@@ -60,6 +60,12 @@ func (s *Service) Register(ctx context.Context, dto RegisterDTO) error {
 	if err != nil {
 		return fmt.Errorf("falha ao criar usuário: %w", err)
 	}
+
+	s.db.CreateRecovery(ctx, database.CreateRecoveryParams{
+		UserID: userID.String(),
+		Email: dto.Email,
+		Code: ,
+	})
 	
 	return nil
 }
@@ -123,3 +129,4 @@ func verifyArgon2Match(password, encodedHash string) (bool, error) {
 
 	return false, nil
 }
+func generateRecoveryCode() (string, error) {}

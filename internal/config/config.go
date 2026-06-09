@@ -11,6 +11,7 @@ type Config struct {
 	Port string
 	DBURL string
 	Env string
+	JWTSecret string
 }
 
 func Load() Config {
@@ -25,6 +26,7 @@ func Load() Config {
 		Port: getEnv("PORT", "8080"),
 		DBURL: getEnv("DATABASE_URL", "postgres://user:password@localhost:5432/mydb?sslmode=disable"),
 		Env: getEnv("ENV", "development"),
+		JWTSecret: getEnv("JWT_SECRET", "your-secret-key"),
 	}
 	
 	return cfg

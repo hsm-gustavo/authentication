@@ -9,7 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hsm-gustavo/authentication/internal/app"
 	"github.com/hsm-gustavo/authentication/internal/config"
+	"github.com/hsm-gustavo/authentication/internal/database"
 	"github.com/hsm-gustavo/authentication/internal/logger"
 	"github.com/hsm-gustavo/authentication/internal/routes"
 )
@@ -24,11 +26,25 @@ func main() {
 
 	log := logger.New(loggerCfg)
 
+	conn, err := database.Init(config.DBURL)
+	if err != nil {
+		log.Error("Não foi possível conectar ao banco de dados", "erro", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+	db := database.New(conn)
+
+	app := &app.Application{
+		Logger: log,
+		DB: db,
+		Config: &config,
+	}
+
 	log.Info("Iniciando o servidor", slog.String("PORT", config.Port))
 
 	srv := &http.Server{
 		Addr: ":" + config.Port,
-		Handler: routes.Setup(log),
+		Handler: routes.Setup(app),
 		// tempos de timeout para melhorar a resiliência do servidor
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,

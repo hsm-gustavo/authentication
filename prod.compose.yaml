@@ -1,4 +1,6 @@
 services:
+  auth:
+    image:
   db:
     image: postgres
     restart: always
@@ -8,7 +10,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=guestbook
+      - POSTGRES_DB=auth
       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     expose:
       - 5432

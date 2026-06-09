@@ -82,7 +82,7 @@ func (s *Service) Register(ctx context.Context, dto RegisterDTO) error {
 
 	subject := "Bem-vindo à nossa plataforma!"
 	body := fmt.Sprintf("\nOlá,\n\nObrigado por se registrar! Seu link de confirmação é: %s\n\nEste link é válido por 15 minutos.\n\nAtenciosamente,\nEquipe de Suporte", 
-    "http://localhost:8080/auth/confirm?code="+code+"&email="+dto.Email)
+    "http://localhost:8080/auth/confirm-email?code="+code+"&email="+dto.Email)
 
 	err = s.emailService.SendEmail(email.Message{
 		To: dto.Email,

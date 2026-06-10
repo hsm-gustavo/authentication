@@ -16,8 +16,6 @@ import (
 // <version>-<trace id>--<span id>-<flags>
 // ref: https://www.w3.org/TR/trace-context-1/#traceparent-header
 
-type contextKey string
-
 // trace_id é o ID único para cada request, seguindo o padrão W3C Trace Context
 const traceIDKey contextKey = "trace_id"
 

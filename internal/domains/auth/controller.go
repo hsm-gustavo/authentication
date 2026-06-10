@@ -2,9 +2,7 @@ package auth
 
 import (
 	"encoding/json"
-	"net"
 	"net/http"
-	"strings"
 )
 
 type Controller struct {
@@ -43,24 +41,7 @@ func (c *Controller) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userAgent := r.Header.Get("User-Agent")
-	// tratando proxies como nginx ou cloudflare
-	ipAddress := r.Header.Get("X-Forwarded-For")
-	if ipAddress == "" {
-		// se nao tiver proxy, pegamos o remote addr
-		var err error
-		ipAddress, _, err = net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			ipAddress = r.RemoteAddr
-		}
-	} else {
-		// se tiver proxy, o header pode conter uma lista de IPs, então pegamos o primeiro
-		if strings.Contains(ipAddress, ",") {
-			ipAddress = strings.Split(ipAddress, ",")[0]
-		}
-	}
-
-	response, err := c.service.Login(r.Context(), dto, userAgent, strings.TrimSpace(ipAddress))
+	response, err := c.service.Login(r.Context(), dto)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -108,4 +89,27 @@ func (c *Controller) ConfirmEmailHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (c *Controller) RefreshHandler(w http.ResponseWriter, r *http.Request) {
+	idCookie, errID := r.Cookie("session_id")
+	secretCookie, errSecret := r.Cookie("session_secret")
+
+	if errID != nil || errSecret != nil {
+		http.Error(w, "Sessão ausente", http.StatusUnauthorized)
+		return
+	}
+
+	newAccessToken, err := c.service.RefreshAccess(r.Context(), idCookie.Value, secretCookie.Value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	response := RefreshResponse{
+		AccessToken: newAccessToken,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

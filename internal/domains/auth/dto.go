@@ -15,3 +15,7 @@ type LoginResponse struct {
 	SessionSecret string `json:"session_secret"`
 	SessionID string `json:"session_id"`
 }
+
+type RefreshResponse struct {
+	AccessToken string `json:"access_token"`
+}

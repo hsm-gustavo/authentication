@@ -38,5 +38,13 @@ func RegisterModule(queries *database.Queries, jwtService *jwt.Service, emailSer
 		controller.ConfirmEmailHandler(w, r)
 	})
 
+	mux.HandleFunc("/refresh", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+			return
+		}
+		controller.RefreshHandler(w, r)
+	})
+
 	return mux
 }

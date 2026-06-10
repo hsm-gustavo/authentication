@@ -7,13 +7,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"net/netip"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/hsm-gustavo/authentication/internal/database"
 	"github.com/hsm-gustavo/authentication/internal/domains/email"
 	"github.com/hsm-gustavo/authentication/internal/domains/jwt"
+	"github.com/hsm-gustavo/authentication/internal/middlewares"
 	"github.com/hsm-gustavo/authentication/shared/date"
 	"github.com/hsm-gustavo/authentication/shared/hash"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -82,7 +82,13 @@ func (s *Service) Register(ctx context.Context, dto RegisterDTO) error {
 	return nil
 }
 
-func (s *Service) Login(ctx context.Context, dto LoginDTO, userAgent, ipAddress string) (*LoginResponse, error) {
+func (s *Service) Login(ctx context.Context, dto LoginDTO) (*LoginResponse, error) {
+	info, ok := ctx.Value(middlewares.ClientInfoKey).(middlewares.ClientInfo)
+
+	if !ok || !info.IP.IsValid() {
+		return nil, errors.New("não foi possível criar uma sessão válida")
+	}
+
 	user, err := s.db.GetUserByEmail(ctx, dto.Email)
 	if err != nil {
 		fmt.Print("Erro ao buscar usuário por email: ", err)
@@ -108,17 +114,13 @@ func (s *Service) Login(ctx context.Context, dto LoginDTO, userAgent, ipAddress 
 	if err != nil {
 		return nil, fmt.Errorf("falha ao gerar segredo da sessão: %w", err)
 	}
-	ip, err := netip.ParseAddr(ipAddress)
-	if err != nil {
-		return nil, fmt.Errorf("falha ao parsear endereço IP: %w", err)
-	}
 
 	_, err = s.db.CreateSession(ctx, database.CreateSessionParams{
 		ID: sessionID.String(),
 		UserID: user.ID,
 		SecretHash: []byte(secretHash),
-		IpAddress: &ip,
-		UserAgent: pgtype.Text{Valid: true, String: userAgent},
+		IpAddress: &info.IP,
+		UserAgent: pgtype.Text{Valid: true, String: info.UserAgent},
 	})
 	
 	token, err := s.jwtService.GenerateToken(user.ID)
@@ -155,6 +157,42 @@ func (s *Service) ConfirmEmail(ctx context.Context, code string, email string) e
 	}
 
 	return nil
+}
+
+func (s *Service) RefreshAccess(ctx context.Context, sessionID, secretReceived string) (string, error) {
+	info, ok := ctx.Value(middlewares.ClientInfoKey).(middlewares.ClientInfo)
+
+	if !ok || !info.IP.IsValid() {
+		return "", errors.New("não foi possível criar uma sessão válida")
+	}
+
+	session, err := s.db.GetSession(ctx, sessionID)
+	if err != nil {
+		return "", errors.New("sessão inválida ou expirada")
+	}
+	
+	// 30 dias
+	if date.IsDaysOld(session.LastVerifiedAt) >= 30 {
+		return "", errors.New("sessão expirada")
+	}
+
+	isValid, err := hash.VerifyArgon2Match(secretReceived, string(session.SecretHash))
+	if err != nil || !isValid {
+		return "", errors.New("sessão inválida")
+	}
+
+	token, err := s.jwtService.GenerateToken(session.UserID)
+	if err != nil {
+		return "", err
+	}
+
+	s.db.UpdateSessionActivity(ctx, database.UpdateSessionActivityParams{
+		ID: session.ID,
+		UserAgent: pgtype.Text{String: info.UserAgent, Valid: true},
+		IpAddress: &info.IP,
+	})
+
+	return token, nil
 }
 
 func generateRecoveryCode() (string, error) {
